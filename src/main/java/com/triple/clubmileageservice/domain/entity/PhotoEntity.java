@@ -1,4 +1,4 @@
-package com.triple.clubmileageservice.entity;
+package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
 

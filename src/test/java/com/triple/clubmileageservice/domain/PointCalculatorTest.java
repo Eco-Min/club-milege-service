@@ -1,7 +1,7 @@
+/*
 package com.triple.clubmileageservice.domain;
 
-import com.triple.clubmileageservice.domain.dto.EventDto;
-import org.assertj.core.api.Assertions;
+import com.triple.clubmileageservice.dto.EventDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class PointCalculatorTest {
 
-    private EventDto eventDto;
+    private EventDto eventDto1;
+    private EventDto eventDto2;
 
     @BeforeEach
     public void beforeEach() {
-        eventDto = EventDto.builder()
+        eventDto1 = EventDto.builder()
                 .type("REVIEW")
                 .action("ADD")
                 .content("")
@@ -27,19 +27,28 @@ class PointCalculatorTest {
                 .userId(UUID.randomUUID().toString())
                 .placeId(UUID.randomUUID().toString())
                 .build();
+
+        eventDto2 = EventDto.builder()
+                .type("REVIEW")
+                .action("ADD")
+                .content("Hello")
+                .attachedPhotoIds(List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
+                .userId(UUID.randomUUID().toString())
+                .placeId(UUID.randomUUID().toString())
+                .build();
     }
 
     @Test
-    @DisplayName("내용 점수 : 1자이상 텍스트, 사진 첨부 1점 추가")
+    @DisplayName("1자이상 텍스트, 사진 첨부 1점 추가")
     public void eventContentAllocationPointPlus() throws Exception{
         //given
-        eventDto.setContent("1자 이상");
-        eventDto.setAttachedPhotoIds(List.of(UUID.randomUUID().toString()));
+        eventDto1.setContent("1자 이상");
+        eventDto1.setAttachedPhotoIds(List.of(UUID.randomUUID().toString()));
         PointCalculator pointCalculator = new PointCalculator();
 
         //when
-        int getContentPoint = pointCalculator.addContentPoint(eventDto.getContent());
-        int getPhotoPoint = pointCalculator.addPhotoPoint(eventDto.getAttachedPhotoIds());
+        int getContentPoint = pointCalculator.addContent(eventDto1.getContent());
+        int getPhotoPoint = pointCalculator.addPhoto(eventDto1.getAttachedPhotoIds());
 
         //then
         assertThat(getContentPoint).isEqualTo(1);
@@ -47,18 +56,60 @@ class PointCalculatorTest {
      }
 
     @Test
-    @DisplayName("내용 점수 : 1자이상 텍스트, 사진 첨부 0점 부여")
+    @DisplayName("1자이상 텍스트, 사진 미첨부 0점 부여")
     public void eventContentAllocationPointZero() throws Exception{
         //given
         PointCalculator pointCalculator = new PointCalculator();
 
         //when
-        int getContentPoint = pointCalculator.addContentPoint(eventDto.getContent());
-        int getPhotoPoint = pointCalculator.addPhotoPoint(eventDto.getAttachedPhotoIds());
+        int getContentPoint = pointCalculator.addContent(eventDto1.getContent());
+        int getPhotoPoint = pointCalculator.addPhoto(eventDto1.getAttachedPhotoIds());
 
         //then
         assertThat(getContentPoint).isEqualTo(0);
         assertThat(getPhotoPoint).isEqualTo(0);
     }
 
+    @Test
+    @DisplayName("content 삭제시 1점 차감")
+    public void deleteContent() throws Exception{
+        //given
+        PointCalculator pointCalculator = new PointCalculator();
+
+        //when
+        int deleteContent = pointCalculator.deleteContent();
+
+        //then
+
+     }
+
+    @Test
+    @DisplayName("photo 삭제시 1점 차감")
+    public void deletePhoto() throws Exception{
+        //given
+        PointCalculator pointCalculator = new PointCalculator();
+
+        //when
+        int deletePhoto = pointCalculator.deletePhoto();
+
+        //then
+
+    }
+
+    @Test
+    @DisplayName("글만 작성한 리뷰에 사진을 추가하면 1점부여")
+    public void eventContentDeleteAllocation() throws Exception{
+        //given
+        PointCalculator pointCalculator = new PointCalculator();
+
+        //when
+        pointCalculator.modifiedContent("");
+        pointCalculator.modifiedPhoto(List.of(""));
+
+        //then
+
+
+     }
+
 }
+*/

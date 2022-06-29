@@ -1,13 +1,14 @@
-package com.triple.clubmileageservice.entity;
+package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
-@Table
+@Table(name="user")
 public class UserEntity extends BaseTimeEntity{
 
     @Id
@@ -18,5 +19,5 @@ public class UserEntity extends BaseTimeEntity{
     private String email;
 
     @OneToMany(mappedBy = "user")
-    List<ReviewEntity> reviews;
+    List<ReviewEntity> reviews = new ArrayList<>();
 }

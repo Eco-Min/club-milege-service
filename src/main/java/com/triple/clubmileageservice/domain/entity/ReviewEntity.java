@@ -1,16 +1,15 @@
-package com.triple.clubmileageservice.entity;
+package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Entity
-@Table(name = "review_entity")
+@Table(name = "review")
 public class ReviewEntity extends BaseTimeEntity{
 
     @Id
@@ -20,9 +19,6 @@ public class ReviewEntity extends BaseTimeEntity{
     @Column(name = "review_content")
     private String content;
 
-    @OneToMany(mappedBy = "review")
-    private List<PhotoEntity> photos;
-
     @ManyToOne
     @JoinColumn(name = "place_id")
     private PlaceEntity place;
@@ -31,8 +27,31 @@ public class ReviewEntity extends BaseTimeEntity{
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    private void saveUser(UserEntity user) {
+    @OneToMany(mappedBy = "review")
+    private List<PhotoEntity> photos = new ArrayList<>();;
 
+    @OneToMany(mappedBy = "review")
+    List<ReviewHISTEntity> reviewHISTs = new ArrayList<>();;
+
+    @Column(name = "use_YN")
+    @Size(max = 1)
+    private String useYN;
+
+    public ReviewEntity(String reviewId, String content) {
+        this.reviewId = reviewId;
+        this.content = content;
+    }
+
+    public ReviewEntity() {
+
+    }
+
+    @PrePersist
+    private void prePersistUseYN() {
+        this.useYN = "Y";
+    }
+
+    public void saveUser(UserEntity user) {
         if (this.user != null) {
             this.user.getReviews().remove(this);
         }
@@ -40,8 +59,7 @@ public class ReviewEntity extends BaseTimeEntity{
         user.getReviews().add(this);
     }
 
-    private void savePlace(PlaceEntity place) {
-
+    public void savePlace(PlaceEntity place) {
         if (this.place != null) {
             this.place.getReviews().remove(this);
         }
