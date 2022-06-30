@@ -6,6 +6,10 @@ import java.util.List;
 
 public class PointCalculator {
 
+    public int addContentAndPhotos(String content, List<String> attachedPhotoIds, String firstReview) {
+        return addContent(content) + addPhoto(attachedPhotoIds);
+    }
+
     public int addContent(String content) {
         return StringUtils.hasText(content) ? 1 : 0;
     }
