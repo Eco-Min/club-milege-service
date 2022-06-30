@@ -1,7 +1,9 @@
 /*
 package com.triple.clubmileageservice.domain;
 
+import com.triple.clubmileageservice.domain.entity.ActionType;
 import com.triple.clubmileageservice.dto.EventDto;
+import com.triple.clubmileageservice.vo.EventVo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,23 +16,23 @@ import static org.assertj.core.api.Assertions.*;
 
 class PointCalculatorTest {
 
-    private EventDto eventDto1;
-    private EventDto eventDto2;
+    private EventVo eventVo1;
+    private EventVo eventVo2;
 
     @BeforeEach
     public void beforeEach() {
-        eventDto1 = EventDto.builder()
+        eventVo1 = EventVo.builder()
                 .type("REVIEW")
-                .action("ADD")
+                .actionType(ActionType.ADD)
                 .content("")
                 .attachedPhotoIds(new ArrayList<>())
                 .userId(UUID.randomUUID().toString())
                 .placeId(UUID.randomUUID().toString())
                 .build();
 
-        eventDto2 = EventDto.builder()
+        eventVo2 = EventVo.builder()
                 .type("REVIEW")
-                .action("ADD")
+                .actionType(ActionType.ADD)
                 .content("Hello")
                 .attachedPhotoIds(List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString()))
                 .userId(UUID.randomUUID().toString())
@@ -42,13 +44,13 @@ class PointCalculatorTest {
     @DisplayName("1자이상 텍스트, 사진 첨부 1점 추가")
     public void eventContentAllocationPointPlus() throws Exception{
         //given
-        eventDto1.setContent("1자 이상");
-        eventDto1.setAttachedPhotoIds(List.of(UUID.randomUUID().toString()));
+//        eventVo1.setContent("1자 이상");
+//        eventVo1.setAttachedPhotoIds(List.of(UUID.randomUUID().toString()));
         PointCalculator pointCalculator = new PointCalculator();
 
         //when
-        int getContentPoint = pointCalculator.addContent(eventDto1.getContent());
-        int getPhotoPoint = pointCalculator.addPhoto(eventDto1.getAttachedPhotoIds());
+        int getContentPoint = pointCalculator.addContent(eventVo1.getContent());
+        int getPhotoPoint = pointCalculator.addPhoto(eventVo1.getAttachedPhotoIds());
 
         //then
         assertThat(getContentPoint).isEqualTo(1);
@@ -62,8 +64,8 @@ class PointCalculatorTest {
         PointCalculator pointCalculator = new PointCalculator();
 
         //when
-        int getContentPoint = pointCalculator.addContent(eventDto1.getContent());
-        int getPhotoPoint = pointCalculator.addPhoto(eventDto1.getAttachedPhotoIds());
+        int getContentPoint = pointCalculator.addContent(eventVo1.getContent());
+        int getPhotoPoint = pointCalculator.addPhoto(eventVo1.getAttachedPhotoIds());
 
         //then
         assertThat(getContentPoint).isEqualTo(0);
@@ -107,8 +109,6 @@ class PointCalculatorTest {
         pointCalculator.modifiedPhoto(List.of(""));
 
         //then
-
-
      }
 
 }

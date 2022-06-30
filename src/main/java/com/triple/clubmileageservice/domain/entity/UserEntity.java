@@ -17,7 +17,4 @@ public class UserEntity extends BaseTimeEntity{
 
     @Column(name = "user_email",nullable = false, unique = true)
     private String email;
-
-    @OneToMany(mappedBy = "user")
-    List<ReviewEntity> reviews = new ArrayList<>();
 }

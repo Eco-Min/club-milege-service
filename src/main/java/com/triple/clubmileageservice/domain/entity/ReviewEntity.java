@@ -27,11 +27,11 @@ public class ReviewEntity extends BaseTimeEntity{
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @OneToMany(mappedBy = "review")
-    private List<PhotoEntity> photos = new ArrayList<>();;
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    private List<PhotoEntity> photos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "review")
-    List<ReviewHISTEntity> reviewHISTs = new ArrayList<>();;
+    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    List<ReviewHISTEntity> reviewHISTs = new ArrayList<>();
 
     @Column(name = "use_YN")
     @Size(max = 1)
@@ -51,19 +51,19 @@ public class ReviewEntity extends BaseTimeEntity{
         this.useYN = "Y";
     }
 
-    public void saveUser(UserEntity user) {
-        if (this.user != null) {
-            this.user.getReviews().remove(this);
-        }
-        this.user = user;
-        user.getReviews().add(this);
-    }
-
     public void savePlace(PlaceEntity place) {
         if (this.place != null) {
             this.place.getReviews().remove(this);
         }
         this.place = place;
         place.getReviews().add(this);
+    }
+
+    public void saveUser(UserEntity userEntity) {
+        /*if (this.user != null) {
+            this.user.getReviews().remove(this);
+        }*/
+        this.user = userEntity;
+//        userEntity.getReviews().add(this);
     }
 }

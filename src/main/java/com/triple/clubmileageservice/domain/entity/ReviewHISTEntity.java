@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class ReviewHISTEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_hist_id")
     private Long id;
 
@@ -22,16 +23,22 @@ public class ReviewHISTEntity {
     @Column(name = "action_type")
     private ActionType actionType;
 
-    @Column(name= "create_at", updatable = false)
+    @Column(name = "review_point")
+    private int reviewPoint;
+
+    @Column(name = "create_at", updatable = false)
     private LocalDateTime createAt;
 
-    public ReviewHISTEntity(long l, ActionType add) {
-        this.id = l;
+    public ReviewHISTEntity(ActionType add) {
         this.actionType = add;
     }
 
     public ReviewHISTEntity() {
 
+    }
+
+    public void setReviewPoint(int reviewPoint) {
+        this.reviewPoint = reviewPoint;
     }
 
     public void saveReview(ReviewEntity review) {
@@ -40,5 +47,9 @@ public class ReviewHISTEntity {
         }
         this.review = review;
         review.getReviewHISTs().add(this);
+    }
+    @PrePersist
+    public void prePersist() {
+        this.createAt = LocalDateTime.now();
     }
 }
