@@ -1,12 +1,14 @@
 package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
 @Table(name="user")
+@NoArgsConstructor
 public class UserEntity extends BaseTimeEntity{
 
     @Id
@@ -19,9 +21,5 @@ public class UserEntity extends BaseTimeEntity{
     public UserEntity(String id, String email) {
         this.id = id;
         this.email = email;
-    }
-
-    public UserEntity() {
-
     }
 }

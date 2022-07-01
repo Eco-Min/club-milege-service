@@ -1,12 +1,14 @@
 package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Getter
 @Entity
 @Table(name = "photo")
+@NoArgsConstructor
 public class PhotoEntity {
 
     @Id
@@ -16,7 +18,7 @@ public class PhotoEntity {
     @Column(name = "photo_file_path")
     private String filePath;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     ReviewEntity review;
 

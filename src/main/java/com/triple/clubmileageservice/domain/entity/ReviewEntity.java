@@ -1,6 +1,7 @@
 package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -10,6 +11,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "review")
+@NoArgsConstructor
 public class ReviewEntity extends BaseTimeEntity{
 
     @Id
@@ -19,18 +21,18 @@ public class ReviewEntity extends BaseTimeEntity{
     @Column(name = "review_content")
     private String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
     private PlaceEntity place;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
-    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "review")
     private List<PhotoEntity> photos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "review", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "review")
     List<ReviewHISTEntity> reviewHISTs = new ArrayList<>();
 
     @Column(name = "use_YN")
@@ -40,10 +42,6 @@ public class ReviewEntity extends BaseTimeEntity{
     public ReviewEntity(String reviewId, String content) {
         this.reviewId = reviewId;
         this.content = content;
-    }
-
-    public ReviewEntity() {
-
     }
 
     @PrePersist

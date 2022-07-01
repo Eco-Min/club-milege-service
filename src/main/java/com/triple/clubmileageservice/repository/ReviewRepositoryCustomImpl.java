@@ -35,7 +35,7 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
     }
 
     private BooleanExpression betweenPointHistDate(LocalDateTime startDate, LocalDateTime endDate) {
-        return startDate != null && endDate !=null ? reviewEntity.modifiedAt.between(startDate, endDate): null;
+        return startDate != null && endDate !=null ? reviewHISTEntity.createAt.between(startDate, endDate): null;
     }
 
     private BooleanExpression userIdEq(String userId) {

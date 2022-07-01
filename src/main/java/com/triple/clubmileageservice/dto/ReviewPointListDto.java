@@ -1,9 +1,11 @@
 package com.triple.clubmileageservice.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+@Getter
 public class ReviewPointListDto {
     private String placeId;
     private String reviewId;

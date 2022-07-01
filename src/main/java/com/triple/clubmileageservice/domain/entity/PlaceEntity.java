@@ -1,6 +1,7 @@
 package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "place")
+@NoArgsConstructor
 public class PlaceEntity extends BaseTimeEntity{
     @Id
     @Column(name = "place_id")

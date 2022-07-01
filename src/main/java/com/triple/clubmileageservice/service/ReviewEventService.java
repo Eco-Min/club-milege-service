@@ -5,14 +5,13 @@ import com.triple.clubmileageservice.domain.entity.*;
 import com.triple.clubmileageservice.dto.EventDto;
 import com.triple.clubmileageservice.dto.ReviewPointListDto;
 import com.triple.clubmileageservice.repository.*;
-import com.triple.clubmileageservice.vo.EventVo;
+import com.triple.clubmileageservice.vo.RequestEventVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,40 +21,55 @@ public class ReviewEventService {
     private final PhotoRepository photoRepository;
     private final PlaceEntityRepository placeEntityRepository;
 
-    @Transactional
     public void events(EventDto eventDto){
-        EventVo eventVo = EventVo.createEventVo(eventDto);
-        switch (eventVo.getActionType()) {
-            case ADD -> createReview(eventVo);
-            case MOD -> modifiedReview(eventVo);
-            case DELETE -> deleteReview(eventVo);
+        switch (eventDto.getActionType()) {
+            case ADD -> createReview(eventDto);
+            case MOD -> modifiedReview(eventDto);
+            case DELETE -> deleteReview(eventDto);
         }
     }
 
-    private void createReview(EventVo eventVo) {
-        PlaceEntity placeEntity = placeEntityRepository.findById(eventVo.getPlaceId()).get();
+    @Transactional
+    public void createReview(EventDto eventDto) {
+        PlaceEntity placeEntity = placeEntityRepository.findById(eventDto.getPlaceId()).get();
 
-        ReviewEntity review = new ReviewEntity(eventVo.getReviewId(), eventVo.getContent());
+        ReviewEntity review = new ReviewEntity(eventDto.getReviewId(), eventDto.getContent());
         review.savePlace(placeEntity);
         reviewEntityRepository.save(review);
 
         PointCalculator pointCalculator = new PointCalculator();
-        int reviewPoint = pointCalculator.addContentAndPhotos(eventVo.getContent(), eventVo.getAttachedPhotoIds(), null);
+        int reviewPoint = pointCalculator.addContentAndPhotos(eventDto.getContent(), eventDto.getAttachedPhotoIds(), null);
 
-        ReviewHISTEntity reviewHISTEntity = new ReviewHISTEntity(eventVo.getActionType());
+        ReviewHISTEntity reviewHISTEntity = new ReviewHISTEntity(eventDto.getActionType());
         reviewHISTEntity.saveReview(review);
         reviewHISTEntity.setReviewPoint(reviewPoint);
         reviewHISTEntityRepository.save(reviewHISTEntity);
     }
-    private void modifiedReview(EventVo eventVo) {
+    @Transactional
+    public void modifiedReview(EventDto eventDto) {
+        ReviewEntity review = reviewEntityRepository.findById(eventDto.getReviewId()).get();
+        List<String> oldPhotos = review.getPhotos().stream().map(PhotoEntity::getId).toList();
+
+        EventDto oldEventDto = EventDto.builder()
+                .content(review.getContent())
+                .attachedPhotoIds(oldPhotos)
+                .build();
+
+        PointCalculator pointCalculator = new PointCalculator();
+        int reviewPoint = pointCalculator.modifiedContentAndPhotos(oldEventDto, eventDto);
+
+        ReviewHISTEntity reviewHISTEntity = new ReviewHISTEntity(eventDto.getActionType());
+        reviewHISTEntity.saveReview(review);
+        reviewHISTEntity.setReviewPoint(reviewPoint);
+        reviewHISTEntityRepository.save(reviewHISTEntity);
+    }
+
+    private void deleteReview(EventDto eventDto) {
 
     }
 
-    private void deleteReview(EventVo eventVo) {
-
-    }
-
-    public void selectDurationPoint(String userId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<ReviewPointListDto> selectDurationPoint(String userId, LocalDateTime startDate, LocalDateTime endDate) {
         List<ReviewPointListDto> search = reviewEntityRepository.search(userId, startDate, endDate);
+        return search;
     }
 }

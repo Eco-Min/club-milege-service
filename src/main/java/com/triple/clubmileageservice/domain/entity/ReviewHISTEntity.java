@@ -1,6 +1,7 @@
 package com.triple.clubmileageservice.domain.entity;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,14 +9,15 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Table(name = "review_hist")
+@NoArgsConstructor
 public class ReviewHISTEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(name = "review_hist_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
     private ReviewEntity review;
 
@@ -36,9 +38,6 @@ public class ReviewHISTEntity {
         this.actionType = add;
     }
 
-    public ReviewHISTEntity() {
-
-    }
 
     public void setReviewPoint(int reviewPoint) {
         this.reviewPoint = reviewPoint;
