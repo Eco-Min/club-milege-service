@@ -22,4 +22,10 @@ public class PlaceEntity extends BaseTimeEntity{
 
     @OneToMany(mappedBy = "place")
     private List<ReviewEntity> reviews = new ArrayList<>();
+
+    public PlaceEntity(String placeId, String placeName, String description) {
+        this.id = placeId;
+        this.placeName = placeName;
+        this.description = description;
+    }
 }

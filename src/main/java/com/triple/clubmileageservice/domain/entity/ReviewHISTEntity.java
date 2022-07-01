@@ -26,6 +26,9 @@ public class ReviewHISTEntity {
     @Column(name = "review_point")
     private int reviewPoint;
 
+    @Column(name = "bonus_point")
+    private int bonusPoint;
+
     @Column(name = "create_at", updatable = false)
     private LocalDateTime createAt;
 

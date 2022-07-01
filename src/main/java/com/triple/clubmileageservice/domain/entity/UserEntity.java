@@ -3,8 +3,6 @@ package com.triple.clubmileageservice.domain.entity;
 import lombok.Getter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Entity
@@ -17,4 +15,13 @@ public class UserEntity extends BaseTimeEntity{
 
     @Column(name = "user_email",nullable = false, unique = true)
     private String email;
+
+    public UserEntity(String id, String email) {
+        this.id = id;
+        this.email = email;
+    }
+
+    public UserEntity() {
+
+    }
 }
