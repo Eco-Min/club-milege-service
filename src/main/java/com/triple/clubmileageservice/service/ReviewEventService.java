@@ -4,72 +4,173 @@ import com.triple.clubmileageservice.domain.PointCalculator;
 import com.triple.clubmileageservice.domain.entity.*;
 import com.triple.clubmileageservice.dto.EventDto;
 import com.triple.clubmileageservice.dto.ReviewPointListDto;
-import com.triple.clubmileageservice.repository.*;
-import com.triple.clubmileageservice.vo.RequestEventVo;
+import com.triple.clubmileageservice.exception.PlaceException;
+import com.triple.clubmileageservice.exception.ReviewException;
+import com.triple.clubmileageservice.exception.UserException;
+import com.triple.clubmileageservice.repository.query.ReviewEventRepository;
+import com.triple.clubmileageservice.reqres.EventRes;
+import com.triple.clubmileageservice.service.domain.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
+@Transactional
+@Slf4j
 @RequiredArgsConstructor
 public class ReviewEventService {
-    private final ReviewEntityRepository reviewEntityRepository;
-    private final ReviewHISTEntityRepository reviewHISTEntityRepository;
-    private final PhotoRepository photoRepository;
-    private final PlaceEntityRepository placeEntityRepository;
+    private final UserService userService;
+    private final PlaceService placeService;
+    private final ReviewService reviewService;
+    private final ReviewHistService reviewHistService;
+    private final PhotoService photoService;
+    private final PointCalculator pointCalculator;
+    private final ReviewEventRepository reviewEventRepository;
 
-    public void events(EventDto eventDto){
+    public EventRes events(EventDto eventDto) {
         switch (eventDto.getActionType()) {
-            case ADD -> createReview(eventDto);
-            case MOD -> modifiedReview(eventDto);
-            case DELETE -> deleteReview(eventDto);
+            case ADD -> {
+                return createReview(eventDto);
+            }
+            case MOD -> {
+                return modifiedReview(eventDto);
+            }
+            case DELETE -> {
+                return deleteReview(eventDto);
+            }
+            default -> {
+                return null;
+            }
         }
     }
 
-    @Transactional
-    public void createReview(EventDto eventDto) {
-        PlaceEntity placeEntity = placeEntityRepository.findById(eventDto.getPlaceId()).get();
+    public EventRes createReview(EventDto eventDto) {
+        log.info("createReview");
+        UserEntity userEntity = checkUser(eventDto);
+        PlaceEntity placeEntity = checkPlace(eventDto);
 
-        ReviewEntity review = new ReviewEntity(eventDto.getReviewId(), eventDto.getContent());
-        review.savePlace(placeEntity);
-        reviewEntityRepository.save(review);
+        ReviewEntity review = saveReviewEntity(eventDto, userEntity, placeEntity);
+        DeleteAndSavePhotosIfPresent(false, eventDto, review);
 
-        PointCalculator pointCalculator = new PointCalculator();
-        int reviewPoint = pointCalculator.addContentAndPhotos(eventDto.getContent(), eventDto.getAttachedPhotoIds(), null);
+        int getPoint = pointCalculator.addContentAndPhotos(eventDto.getContent(), eventDto.getAttachedPhotoIds());
+        int placeBonbonsPoint = reviewEventRepository.placeBonbonsPoint(placeEntity.getPlaceNo());
+        saveReviewHist(getPoint, placeBonbonsPoint, eventDto, review);
 
-        ReviewHISTEntity reviewHISTEntity = new ReviewHISTEntity(eventDto.getActionType());
-        reviewHISTEntity.saveReview(review);
-        reviewHISTEntity.setReviewPoint(reviewPoint);
-        reviewHISTEntityRepository.save(reviewHISTEntity);
+        return new EventRes(getPoint, placeBonbonsPoint, eventDto);
     }
-    @Transactional
-    public void modifiedReview(EventDto eventDto) {
-        ReviewEntity review = reviewEntityRepository.findById(eventDto.getReviewId()).get();
-        List<String> oldPhotos = review.getPhotos().stream().map(PhotoEntity::getId).toList();
 
+    public EventRes modifiedReview(EventDto eventDto) {
+        log.info("modifiedReview");
+        checkUser(eventDto);
+        PlaceEntity placeEntity = checkPlace(eventDto);
+        ReviewEntity review = reviewService.findByReviewIdAndUseYN(eventDto.getReviewId());
+        if (review == null) {
+            throw new ReviewException(eventDto.getReviewId(), false);
+        }
+
+        List<String> oldPhotos = review.getPhotos().stream().map(PhotoEntity::getPhotoId).toList();
         EventDto oldEventDto = EventDto.builder()
                 .content(review.getContent())
                 .attachedPhotoIds(oldPhotos)
                 .build();
 
-        PointCalculator pointCalculator = new PointCalculator();
-        int reviewPoint = pointCalculator.modifiedContentAndPhotos(oldEventDto, eventDto);
+        boolean photoDiff = photoDiff(eventDto, oldPhotos);
+        DeleteAndSavePhotosIfPresent(photoDiff, eventDto, review);
 
-        ReviewHISTEntity reviewHISTEntity = new ReviewHISTEntity(eventDto.getActionType());
-        reviewHISTEntity.saveReview(review);
-        reviewHISTEntity.setReviewPoint(reviewPoint);
-        reviewHISTEntityRepository.save(reviewHISTEntity);
+        int getPoint = pointCalculator.modifiedContentAndPhotos(oldEventDto, eventDto);
+        int hasBonusPoint = reviewEventRepository.placeBonbonsPoint(placeEntity.getPlaceNo());
+        saveReviewHist(getPoint, hasBonusPoint, eventDto, review);
+        review.changeContent(eventDto.getContent());
+
+        return new EventRes(getPoint, hasBonusPoint, eventDto);
     }
 
-    private void deleteReview(EventDto eventDto) {
+    public EventRes deleteReview(EventDto eventDto) {
+        log.info("deleteReview");
+        checkUser(eventDto);
+        checkPlace(eventDto);
 
+        ReviewEntity getReview = reviewService.findByReviewId(eventDto.getReviewId());
+        if (getReview == null || getReview.getUseYN().equals("N")) {
+            throw new ReviewException(eventDto.getReviewId(), false);
+        }
+        getReview.deleteUse();
+        photoService.deleteAllPhotoIds(eventDto.getAttachedPhotoIds());
+
+        int hasPoint = reviewEventRepository.checkPoint(getReview.getReviewNo());
+        int hasBonusPoint = reviewEventRepository.hasBonusPoint(getReview.getReviewNo());
+        saveReviewHist(hasPoint, hasBonusPoint, eventDto, getReview);
+        return new EventRes(hasPoint, hasBonusPoint, eventDto);
     }
 
     public List<ReviewPointListDto> selectDurationPoint(String userId, LocalDateTime startDate, LocalDateTime endDate) {
-        List<ReviewPointListDto> search = reviewEntityRepository.search(userId, startDate, endDate);
-        return search;
+        return reviewEventRepository.searchUserDurationPoint(userId, startDate, endDate);
+    }
+
+
+    private void saveReviewHist(int reviewPoint, int bonusPoint, EventDto eventDto, ReviewEntity review) {
+        ReviewHistEntity reviewHistEntity = new ReviewHistEntity(eventDto.getActionType());
+        reviewHistEntity.saveReview(review);
+        reviewHistEntity.setReviewPoint(reviewPoint);
+        reviewHistEntity.setBonusPoint(bonusPoint);
+        reviewHistService.save(reviewHistEntity);
+    }
+
+
+    private void DeleteAndSavePhotosIfPresent(boolean hasPhotos, EventDto eventDto, ReviewEntity review) {
+        if (hasPhotos) {
+            photoService.deleteAllPhotoIds(eventDto.getAttachedPhotoIds());
+        }
+        if (eventDto.getActionType() != ActionType.MOD) {
+            List<PhotoEntity> photos = new ArrayList<>();
+            for (String attachedPhotoId : eventDto.getAttachedPhotoIds()) {
+                PhotoEntity photo = new PhotoEntity(attachedPhotoId);
+                photo.saveReview(review);
+                photos.add(photo);
+            }
+            photoService.saveAll(photos);
+        }
+    }
+
+    private ReviewEntity saveReviewEntity(EventDto eventDto, UserEntity userEntity, PlaceEntity placeEntity) {
+        ReviewEntity reviewId = reviewService.findByReviewId(eventDto.getReviewId());
+        if (reviewId != null) {
+            throw new ReviewException(eventDto.getReviewId(), true);
+        }
+        ReviewEntity review = new ReviewEntity(eventDto.getReviewId(), eventDto.getContent());
+        review.savePlace(placeEntity);
+        review.saveUser(userEntity);
+        reviewService.save(review);
+        return review;
+    }
+
+    private UserEntity checkUser(EventDto eventDto) {
+        UserEntity userEntity = userService.findUserId(eventDto.getUserId());
+        if (userEntity == null) {
+            throw new UserException(eventDto.getUserId());
+        }
+        return userEntity;
+    }
+
+    private PlaceEntity checkPlace(EventDto eventDto) {
+        PlaceEntity placeEntity = placeService.findPlaceId(eventDto.getPlaceId());
+        if (placeEntity == null) {
+            throw new PlaceException(eventDto.getUserId());
+        }
+        return placeEntity;
+    }
+
+    private boolean photoDiff(EventDto eventDto, List<String> oldPhotos) {
+        Set<String> photoSet = new HashSet<>();
+        photoSet.addAll(oldPhotos);
+        photoSet.addAll(eventDto.getAttachedPhotoIds());
+        return photoSet.size() != oldPhotos.size();
     }
 }

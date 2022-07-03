@@ -1,9 +1,9 @@
-package com.triple.clubmileageservice.service;
+package com.triple.clubmileageservice.service.domain;
 
 import com.triple.clubmileageservice.domain.entity.UserEntity;
 import com.triple.clubmileageservice.dto.UserDto;
 import com.triple.clubmileageservice.repository.UserEntityRepository;
-import com.triple.clubmileageservice.vo.ResponseUserVo;
+import com.triple.clubmileageservice.reqres.UserRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,19 +15,23 @@ import java.util.List;
 public class UserService {
     private final UserEntityRepository userEntityRepository;
 
-    public ResponseUserVo createUser(String userEmail) {
+    public UserRes createUser(String userEmail) {
         UserDto userDto = UserDto.createUserDto(userEmail);
         UserEntity userEntity = new UserEntity(userDto.getUserId(), userDto.getUserEmail());
         UserEntity save = userEntityRepository.save(userEntity);
-        return new ResponseUserVo(save.getId(), save.getEmail());
+        return new UserRes(save.getUserId(), save.getEmail());
     }
 
-    public List<ResponseUserVo> findAllUser() {
+    public List<UserRes> findAllUser() {
         List<UserEntity> users = userEntityRepository.findAll();
-        List<ResponseUserVo> responseUserVos = new ArrayList<>();
+        List<UserRes> userResList = new ArrayList<>();
         for (UserEntity user : users) {
-            responseUserVos.add(new ResponseUserVo(user.getId(), user.getEmail()));
+            userResList.add(new UserRes(user.getUserId(), user.getEmail()));
         }
-        return responseUserVos;
+        return userResList;
+    }
+
+    public UserEntity findUserId(String userId) {
+        return userEntityRepository.findByUserId(userId);
     }
 }
