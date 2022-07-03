@@ -1,11 +1,15 @@
-package com.triple.clubmileageservice.vo;
+package com.triple.clubmileageservice.reqres;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
-public class RequestEventVo {
+@AllArgsConstructor
+@NoArgsConstructor
+public class EventReq {
 
     private String type;
     private String action;
