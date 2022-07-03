@@ -15,7 +15,6 @@ public class ClubMileageServiceApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ClubMileageServiceApplication.class, args);
 	}
-
 	@Bean
 	JPAQueryFactory jpaQueryFactory(EntityManager em) {
 		return new JPAQueryFactory(em);
