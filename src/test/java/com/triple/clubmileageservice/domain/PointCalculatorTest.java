@@ -22,7 +22,7 @@ class PointCalculatorTest {
         
         //when
         PointCalculator pointCalculator = new PointCalculator();
-        int point = pointCalculator.addContentAndPhotos(content, photoList, null);
+        int point = pointCalculator.addContentAndPhotos(content, photoList);
 
         //then
         assertThat(point).isEqualTo(2);
