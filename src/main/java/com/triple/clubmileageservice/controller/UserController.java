@@ -1,7 +1,8 @@
 package com.triple.clubmileageservice.controller;
 
-import com.triple.clubmileageservice.service.UserService;
-import com.triple.clubmileageservice.vo.ResponseUserVo;
+import com.triple.clubmileageservice.service.domain.UserService;
+import com.triple.clubmileageservice.reqres.UserReq;
+import com.triple.clubmileageservice.reqres.UserRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,17 +18,12 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/createUser")
-    public ResponseUserVo createUser(@RequestBody String userEmail) {
-        String emailRegex = "^(.+)@(.+)$";
-        boolean matcherEmail = Pattern.compile(emailRegex).matcher(userEmail).find();
-        if (matcherEmail) {
-            return userService.createUser(userEmail);
-        }
-        return null;
+    public UserRes createUser(@RequestBody UserReq userReq) {
+        return userService.createUser(userReq.getUserEmail());
     }
 
     @GetMapping("/findAllUser")
-    public List<ResponseUserVo> findAllUser() {
+    public List<UserRes> findAllUser() {
         return userService.findAllUser();
     }
 }
