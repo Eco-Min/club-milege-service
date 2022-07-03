@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public class UserRes {
-    private final String userId;
-    private final String userEmail;
+    private String userId;
+    private String userEmail;
 
     public UserRes(String id, String email) {
         this.userId = id;
