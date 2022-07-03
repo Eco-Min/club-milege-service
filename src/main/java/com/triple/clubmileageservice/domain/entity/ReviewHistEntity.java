@@ -8,17 +8,19 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "review_hist")
+@Table(name = "review_hist",
+        indexes = {@Index(name="i_createAt", columnList = "create_At"),
+                @Index(name="i_reviewHistNo", columnList = "review_hist_no")})
 @NoArgsConstructor
-public class ReviewHISTEntity {
+public class ReviewHistEntity {
 
     @Id
     @GeneratedValue
-    @Column(name = "review_hist_id")
+    @Column(name = "review_hist_no")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
+    @JoinColumn(name = "review_no")
     private ReviewEntity review;
 
     @Enumerated(EnumType.STRING)
@@ -34,7 +36,7 @@ public class ReviewHISTEntity {
     @Column(name = "create_at", updatable = false)
     private LocalDateTime createAt;
 
-    public ReviewHISTEntity(ActionType add) {
+    public ReviewHistEntity(ActionType add) {
         this.actionType = add;
     }
 
@@ -53,5 +55,9 @@ public class ReviewHISTEntity {
     @PrePersist
     public void prePersist() {
         this.createAt = LocalDateTime.now();
+    }
+
+    public void setBonusPoint(int bonusPoint) {
+        this.bonusPoint = bonusPoint;
     }
 }

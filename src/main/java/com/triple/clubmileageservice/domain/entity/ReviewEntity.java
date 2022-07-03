@@ -14,26 +14,31 @@ import java.util.List;
 @NoArgsConstructor
 public class ReviewEntity extends BaseTimeEntity{
 
+
     @Id
-    @Column(name = "review_id")
+    @GeneratedValue
+    @Column(name = "review_no")
+    private Long reviewNo;
+
+    @Column(name = "review_id", unique = true)
     private String reviewId;
 
     @Column(name = "review_content")
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id")
+    @JoinColumn(name = "place_no")
     private PlaceEntity place;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_no")
     private UserEntity user;
 
     @OneToMany(mappedBy = "review")
     private List<PhotoEntity> photos = new ArrayList<>();
 
     @OneToMany(mappedBy = "review")
-    List<ReviewHISTEntity> reviewHISTs = new ArrayList<>();
+    private List<ReviewHistEntity> reviewHISTs = new ArrayList<>();
 
     @Column(name = "use_YN")
     @Size(max = 1)
@@ -58,10 +63,14 @@ public class ReviewEntity extends BaseTimeEntity{
     }
 
     public void saveUser(UserEntity userEntity) {
-        /*if (this.user != null) {
-            this.user.getReviews().remove(this);
-        }*/
         this.user = userEntity;
-//        userEntity.getReviews().add(this);
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public void deleteUse() {
+        this.useYN = "N";
     }
 }

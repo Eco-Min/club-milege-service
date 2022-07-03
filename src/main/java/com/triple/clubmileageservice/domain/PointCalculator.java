@@ -1,13 +1,15 @@
 package com.triple.clubmileageservice.domain;
 
 import com.triple.clubmileageservice.dto.EventDto;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 
+@Component
 public class PointCalculator {
 
-    public int addContentAndPhotos(String content, List<String> attachedPhotoIds, String firstReview) {
+    public int addContentAndPhotos(String content, List<String> attachedPhotoIds) {
         return addContent(content) + addPhoto(attachedPhotoIds);
     }
 

@@ -12,8 +12,12 @@ import javax.persistence.*;
 public class PhotoEntity {
 
     @Id
-    @Column(name = "photo_id")
-    private String id;
+    @GeneratedValue
+    @Column(name = "photo_no")
+    private Long photoNo;
+
+    @Column(name = "photo_id", unique = true)
+    private String photoId;
 
     @Column(name = "photo_file_path")
     private String filePath;
@@ -22,7 +26,11 @@ public class PhotoEntity {
     @JoinColumn(name = "review_id")
     ReviewEntity review;
 
-    private void saveReview(ReviewEntity review) {
+    public PhotoEntity(String photoId) {
+        this.photoId = photoId;
+    }
+
+    public void saveReview(ReviewEntity review) {
         if (this.review != null) {
             this.review.getPhotos().remove(this);
         }
