@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 public class ReviewException extends RuntimeException {
     public ReviewException(String reviewId, boolean exist) {
-        super(reviewId + " review 등록중 review 가 존재합니다.");
+        super(reviewId + " review 가 등록 되었거나 삭제된 review 입니다.");
     }
 }

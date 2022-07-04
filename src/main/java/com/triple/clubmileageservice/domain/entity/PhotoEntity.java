@@ -7,7 +7,7 @@ import javax.persistence.*;
 
 @Getter
 @Entity
-@Table(name = "photo")
+@Table(name = "photo", indexes = @Index(name="i_photoId", columnList = "photo_id"))
 @NoArgsConstructor
 public class PhotoEntity {
 

@@ -8,9 +8,11 @@ import java.util.List;
 public interface ReviewEventRepository {
     List<ReviewPointListDto> searchUserDurationPoint(String userId, LocalDateTime startDate, LocalDateTime endDate);
 
-    int placeBonbonsPoint(Long placeNo);
+    int checkPlaceBonbonsPoint(Long placeNo);
 
-    Integer checkPoint(Long reviewNo);
+    Integer userHasPointInPlace(Long reviewNo);
 
-    int hasBonusPoint(Long reviewNo);
+    int userHasBonusPointInPlace(Long reviewNo);
+
+    Integer allPointFromUser(String userId);
 }

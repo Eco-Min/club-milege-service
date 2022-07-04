@@ -9,6 +9,7 @@ import com.triple.clubmileageservice.exception.ReviewException;
 import com.triple.clubmileageservice.exception.UserException;
 import com.triple.clubmileageservice.repository.query.ReviewEventRepository;
 import com.triple.clubmileageservice.reqres.EventRes;
+import com.triple.clubmileageservice.reqres.UserPointRes;
 import com.triple.clubmileageservice.service.domain.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +61,7 @@ public class ReviewEventService {
         DeleteAndSavePhotosIfPresent(false, eventDto, review);
 
         int getPoint = pointCalculator.addContentAndPhotos(eventDto.getContent(), eventDto.getAttachedPhotoIds());
-        int placeBonbonsPoint = reviewEventRepository.placeBonbonsPoint(placeEntity.getPlaceNo());
+        int placeBonbonsPoint = reviewEventRepository.checkPlaceBonbonsPoint(placeEntity.getPlaceNo());
         saveReviewHist(getPoint, placeBonbonsPoint, eventDto, review);
 
         return new EventRes(getPoint, placeBonbonsPoint, eventDto);
@@ -85,7 +86,7 @@ public class ReviewEventService {
         DeleteAndSavePhotosIfPresent(photoDiff, eventDto, review);
 
         int getPoint = pointCalculator.modifiedContentAndPhotos(oldEventDto, eventDto);
-        int hasBonusPoint = reviewEventRepository.placeBonbonsPoint(placeEntity.getPlaceNo());
+        int hasBonusPoint = reviewEventRepository.checkPlaceBonbonsPoint(placeEntity.getPlaceNo());
         saveReviewHist(getPoint, hasBonusPoint, eventDto, review);
         review.changeContent(eventDto.getContent());
 
@@ -104,14 +105,19 @@ public class ReviewEventService {
         getReview.deleteUse();
         photoService.deleteAllPhotoIds(eventDto.getAttachedPhotoIds());
 
-        int hasPoint = reviewEventRepository.checkPoint(getReview.getReviewNo());
-        int hasBonusPoint = reviewEventRepository.hasBonusPoint(getReview.getReviewNo());
+        int hasPoint = reviewEventRepository.userHasPointInPlace(getReview.getReviewNo());
+        int hasBonusPoint = reviewEventRepository.userHasBonusPointInPlace(getReview.getReviewNo());
         saveReviewHist(hasPoint, hasBonusPoint, eventDto, getReview);
         return new EventRes(hasPoint, hasBonusPoint, eventDto);
     }
 
     public List<ReviewPointListDto> selectDurationPoint(String userId, LocalDateTime startDate, LocalDateTime endDate) {
         return reviewEventRepository.searchUserDurationPoint(userId, startDate, endDate);
+    }
+
+    public UserPointRes selectUserPoint(String userId) {
+        Integer userPoint = reviewEventRepository.allPointFromUser(userId);
+        return new UserPointRes(userId, userPoint);
     }
 
 
@@ -128,7 +134,7 @@ public class ReviewEventService {
         if (hasPhotos) {
             photoService.deleteAllPhotoIds(eventDto.getAttachedPhotoIds());
         }
-        if (eventDto.getActionType() != ActionType.MOD) {
+        if (eventDto.getAttachedPhotoIds().size()>0 && hasPhotos) {
             List<PhotoEntity> photos = new ArrayList<>();
             for (String attachedPhotoId : eventDto.getAttachedPhotoIds()) {
                 PhotoEntity photo = new PhotoEntity(attachedPhotoId);

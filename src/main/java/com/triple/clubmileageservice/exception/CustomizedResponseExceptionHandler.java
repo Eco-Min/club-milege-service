@@ -14,7 +14,7 @@ import java.util.Date;
 @ControllerAdvice
 public class CustomizedResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(UserException.class)
+    @ExceptionHandler({UserException.class, PlaceException.class, ReviewException.class})
     public final ResponseEntity<Object> handleAllExceptions(Exception ex, WebRequest req) {
         ExceptionRes exceptionRes = new ExceptionRes(new Date(), ex.getMessage(), req.getDescription(false));
         return new ResponseEntity<>(exceptionRes, HttpStatus.BAD_REQUEST);

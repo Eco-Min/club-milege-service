@@ -4,7 +4,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/club_mileage?serverTimezone=UTC&characterEncoding=UTF-8
-    username: root
+    username: kjmin
     password: 1234
   jpa:
     hibernate:
