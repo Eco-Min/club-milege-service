@@ -8,6 +8,8 @@ import com.triple.clubmileageservice.reqres.UserPointRes;
 import com.triple.clubmileageservice.service.ReviewEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -20,8 +22,11 @@ public class EventController {
     private final ReviewEventService reviewEventService;
 
     @PostMapping("/events")
-    public EventRes events(@RequestBody EventReq eventReq) {
+    public Object events(@Validated @RequestBody EventReq eventReq, BindingResult bindingResult) {
         EventDto eventDto = EventDto.createEventDto(eventReq);
+        if (bindingResult.hasErrors()) {
+            return bindingResult.getAllErrors();
+        }
         return reviewEventService.events(eventDto);
     }
 

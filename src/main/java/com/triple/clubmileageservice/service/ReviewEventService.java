@@ -58,7 +58,7 @@ public class ReviewEventService {
         PlaceEntity placeEntity = checkPlace(eventDto);
 
         ReviewEntity review = saveReviewEntity(eventDto, userEntity, placeEntity);
-        DeleteAndSavePhotosIfPresent(false, eventDto, review);
+        DeleteAndSavePhotosIfPresent(true, eventDto, review);
 
         int getPoint = pointCalculator.addContentAndPhotos(eventDto.getContent(), eventDto.getAttachedPhotoIds());
         int placeBonbonsPoint = reviewEventRepository.checkPlaceBonbonsPoint(placeEntity.getPlaceNo());
@@ -131,7 +131,7 @@ public class ReviewEventService {
 
 
     private void DeleteAndSavePhotosIfPresent(boolean hasPhotos, EventDto eventDto, ReviewEntity review) {
-        if (hasPhotos) {
+        if (hasPhotos && eventDto.getActionType() != ActionType.ADD) {
             photoService.deleteAllPhotoIds(eventDto.getAttachedPhotoIds());
         }
         if (eventDto.getAttachedPhotoIds().size()>0 && hasPhotos) {
