@@ -19,4 +19,5 @@ grant all privileges on club_mileage.* to kjmin@localhost;
 
 ### table 생성
 - table 의 생성 sql -> [clubmilage.sql](https://github.com/Eco-Min/club-milege-service/blob/main/article/clubmilage.sql)
+- DB Diagram -> [DB Diagram](https://github.com/Eco-Min/club-milege-service/blob/main/article/diagram.png)
 - .yml -> ddl-auto : update -> 자동으로 관리 됩니다.
