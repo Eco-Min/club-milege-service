@@ -1,9 +1,7 @@
 package com.triple.clubmileageservice.repository.query;
 
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.triple.clubmileageservice.domain.entity.PlaceEntity;
 import com.triple.clubmileageservice.dto.QReviewPointListDto;
 import com.triple.clubmileageservice.dto.QUserReviewPointDto;
 import com.triple.clubmileageservice.dto.ReviewPointListDto;

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 @Service
 @Transactional
@@ -131,8 +132,9 @@ public class ReviewEventService {
 
 
     private void DeleteAndSavePhotosIfPresent(boolean hasPhotos, EventDto eventDto, ReviewEntity review) {
-        if (hasPhotos && eventDto.getActionType() != ActionType.ADD) {
-            photoService.deleteAllPhotoIds(eventDto.getAttachedPhotoIds());
+        if (hasPhotos) {
+            List<String> photos = review.getPhotos().stream().map(PhotoEntity::getPhotoId).toList();
+            photoService.deleteAllPhotoIds(photos);
         }
         if (eventDto.getAttachedPhotoIds().size()>0 && hasPhotos) {
             List<PhotoEntity> photos = new ArrayList<>();
@@ -172,8 +174,11 @@ public class ReviewEventService {
         }
         return placeEntity;
     }
-
+//    e4d1a64e-a531-46de-88d0-ff0ed70c0b15
     private boolean photoDiff(EventDto eventDto, List<String> oldPhotos) {
+        if (eventDto.getAttachedPhotoIds().size() != oldPhotos.size()) {
+            return true;
+        }
         Set<String> photoSet = new HashSet<>();
         photoSet.addAll(oldPhotos);
         photoSet.addAll(eventDto.getAttachedPhotoIds());
