@@ -60,7 +60,9 @@ class ReviewEventServiceTest {
     }
 
     @Test
-    @DisplayName("ADD 장소 첫리뷰 Bonus 횟득")
+    @DisplayName("ADD 장소 첫리뷰 Bonus 횟득 : 3점 부여")
+    @Transactional
+    @Rollback
     public void getAllReviewPointWithBonusPoint() throws Exception {
         //given
         EventDto eventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
@@ -77,14 +79,16 @@ class ReviewEventServiceTest {
     }
 
     @Test
-    @DisplayName("ADD 장소 리뷰 Bonus 횟득X content X")
+    @DisplayName("ADD 장소 리뷰 Bonus 횟득X content X 1점 부여")
+    @Transactional
+    @Rollback
     public void Add() throws Exception {
         //given
         EventDto oldEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
-        reviewEventService.events(oldEventDto);
         EventDto newEventDto = eventDto(reviewId2, "ADD", "", attachePhotoIds2, userRes2);
 
         //when
+        reviewEventService.events(oldEventDto);
         EventRes events = reviewEventService.events(newEventDto);
 
         //then
@@ -96,16 +100,16 @@ class ReviewEventServiceTest {
     }
 
     @Test
-    @DisplayName("MOD Content O -> Content X")
+    @DisplayName("MOD Content O -> Content X : -1점 부여")
+    @Transactional
+    @Rollback
     public void MODContentX() throws Exception {
         //given
         EventDto oldEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
-        EventRes events1 = reviewEventService.events(oldEventDto);
-        System.out.println("events1.getBonusPoint() = " + events1.getBonusPoint());
-        System.out.println("events1.getReviewPoint() = " + events1.getReviewPoint());
-        EventDto newEventDto = eventDto(reviewId1, "MOD","", attachePhotoIds1, userRes1);
+        EventDto newEventDto = eventDto(reviewId1, "MOD", "", attachePhotoIds1, userRes1);
 
         //when
+        reviewEventService.events(oldEventDto);
         EventRes events = reviewEventService.events(newEventDto);
 
         //then
@@ -117,16 +121,16 @@ class ReviewEventServiceTest {
     }
 
     @Test
-    @DisplayName("MOD photo O -> photo X")
+    @DisplayName("MOD photo O -> photo X : -1점 부여")
+    @Transactional
+    @Rollback
     public void MODPhotoX() throws Exception {
         //given
         EventDto oldEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
-        EventRes events1 = reviewEventService.events(oldEventDto);
-        System.out.println("events1.getBonusPoint() = " + events1.getBonusPoint());
-        System.out.println("events1.getReviewPoint() = " + events1.getReviewPoint());
-        EventDto newEventDto = eventDto(reviewId1, "MOD","Add Hello", new ArrayList<>(), userRes1);
+        EventDto newEventDto = eventDto(reviewId1, "MOD", "Add Hello", new ArrayList<>(), userRes1);
 
         //when
+        reviewEventService.events(oldEventDto);
         EventRes events = reviewEventService.events(newEventDto);
 
         //then
@@ -139,14 +143,77 @@ class ReviewEventServiceTest {
 
     @Test
     @DisplayName("삭제시 얻음 점수 전부 삭제")
+    @Transactional
+    @Rollback
     public void DELETE() throws Exception {
         //given
+        EventDto oldEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
+        EventDto newEventDto = eventDto(reviewId1, "DELETE", "Add Hello", new ArrayList<>(), userRes1);
 
         //when
-
+        EventRes events = reviewEventService.events(oldEventDto);
+        EventRes deleteEvents = reviewEventService.events(newEventDto);
 
         //then
+        EventRes eventRes = new EventRes(-2, -1, newEventDto);
 
+        Assertions.assertThat(deleteEvents.getReviewPoint()).isEqualTo(eventRes.getReviewPoint());
+        Assertions.assertThat(deleteEvents.getBonusPoint()).isEqualTo(eventRes.getBonusPoint());
+        Assertions.assertThat(deleteEvents.getEventReq().getReviewId()).isEqualTo(eventRes.getEventReq().getReviewId());
+
+    }
+
+    @Test
+    @DisplayName("A가 첫 리뷰가 삭제 후, B가 두번재 리뷰를 남기면 bonus ㅒ")
+    public void getBonusPointWhenDeleteFirstAfterSecond() throws Exception {
+        //given
+        EventDto firstEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
+        EventDto secondEventDto = eventDto(reviewId2, "ADD", "Add Hello", attachePhotoIds2, userRes2);
+        EventDto firDelEventDto = eventDto(reviewId1, "DELETE", "Delete Hello", new ArrayList<>(), userRes1);
+
+        //when
+        EventRes firEvents = reviewEventService.events(firstEventDto);
+        EventRes firDeleteEvents = reviewEventService.events(firDelEventDto);
+        EventRes secEvents = reviewEventService.events(secondEventDto);
+
+        //then
+        EventRes secEventRes = new EventRes(2, 1, secondEventDto);
+        EventRes firEventRes = new EventRes(2, 1, firstEventDto);
+
+        Assertions.assertThat(firEvents.getReviewPoint()).isEqualTo(firEventRes.getReviewPoint());
+        Assertions.assertThat(firEvents.getBonusPoint()).isEqualTo(firEventRes.getBonusPoint());
+        Assertions.assertThat(firEvents.getEventReq().getUserId()).isEqualTo(firEventRes.getEventReq().getUserId());
+
+        Assertions.assertThat(secEvents.getReviewPoint()).isEqualTo(secEventRes.getReviewPoint());
+        Assertions.assertThat(secEvents.getBonusPoint()).isEqualTo(secEventRes.getBonusPoint());
+        Assertions.assertThat(secEvents.getEventReq().getUserId()).isEqualTo(secEventRes.getEventReq().getUserId());
+
+    }
+
+    @Test
+    @DisplayName("A가 첫 리뷰가 삭제하기전, B가 두번재 리뷰를 남기면 bonus X")
+    public void WithoutBonusPointWhenDeleteFirstBeforeSecond() throws Exception {
+        //given
+        EventDto firstEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
+        EventDto secondEventDto = eventDto(reviewId2, "ADD", "Add Hello", attachePhotoIds2, userRes2);
+        EventDto firDelEventDto = eventDto(reviewId1, "DELETE", "Delete Hello", new ArrayList<>(), userRes1);
+
+        //when
+        EventRes firEvents = reviewEventService.events(firstEventDto);
+        EventRes secEvents = reviewEventService.events(secondEventDto);
+        EventRes firDeleteEvents = reviewEventService.events(firDelEventDto);
+
+        //then
+        EventRes firDelEventRes = new EventRes(-2, -1, firDelEventDto);
+        EventRes secEventRes = new EventRes(2, 0, secondEventDto);
+
+        Assertions.assertThat(firDeleteEvents.getReviewPoint()).isEqualTo(firDelEventRes.getReviewPoint());
+        Assertions.assertThat(firDeleteEvents.getBonusPoint()).isEqualTo(firDelEventRes.getBonusPoint());
+        Assertions.assertThat(firDeleteEvents.getEventReq().getUserId()).isEqualTo(firDelEventRes.getEventReq().getUserId());
+
+        Assertions.assertThat(secEvents.getReviewPoint()).isEqualTo(secEventRes.getReviewPoint());
+        Assertions.assertThat(secEvents.getBonusPoint()).isEqualTo(secEventRes.getBonusPoint());
+        Assertions.assertThat(secEvents.getEventReq().getUserId()).isEqualTo(secEventRes.getEventReq().getUserId());
     }
 
 }
