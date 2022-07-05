@@ -3,7 +3,7 @@ spring:
     active: local
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/club_mileage?serverTimezone=UTC&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/club_mileage?serverTimezone=Asia/Seoul&useSSL=false&characterEncoding=UTF-8
     username: kjmin
     password: 1234
   jpa:
