@@ -164,7 +164,7 @@ class ReviewEventServiceTest {
     }
 
     @Test
-    @DisplayName("A가 첫 리뷰가 삭제 후, B가 두번재 리뷰를 남기면 bonus ㅒ")
+    @DisplayName("A가 첫 리뷰가 삭제 후, B가 두번재 리뷰를 남기면 bonus O")
     public void getBonusPointWhenDeleteFirstAfterSecond() throws Exception {
         //given
         EventDto firstEventDto = eventDto(reviewId1, "ADD", "Add Hello", attachePhotoIds1, userRes1);
